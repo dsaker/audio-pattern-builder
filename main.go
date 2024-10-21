@@ -22,13 +22,12 @@ const (
 func main() {
 
 	m := make([]Audio, sliceSize)
+	// increasing the multiplier will increase distance between repetitions of a phrase
 	multi := 10
 	for i := 1; i <= numberPhrases; i++ {
+		// find the next free index
 		first := findNextFree(m, i)
-		if first == numberPhrases {
-			fmt.Println(i)
-			break
-		}
+
 		m = fillNextIfFree(m, true, first, i)
 		m = fillNextIfFree(m, false, first+1, i)
 		m = fillNextIfFree(m, false, first+2, i)
@@ -60,10 +59,12 @@ func main() {
 	//	for j < len(newArray) {
 	//		if newArray[j].Id == i && newArray[j].Native == true {
 	//			count++
+	//			// this will give you an idea of the spacing between repetition
 	//			fmt.Printf("%d: line: %d\n", i, j)
 	//		}
 	//		j++
 	//	}
+	//	// total number of times it appears in the array
 	//	fmt.Printf("%d: %d\n", i, count)
 	//}
 
@@ -73,13 +74,21 @@ func main() {
 		newArray[i].Id = newArray[i].Id - 1
 	}
 
-	file, err := os.OpenFile("/Users/dustysaker/GolandProjects/audioForLoop/audioPattern.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	// get working directory to print out pattern
+	pwd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	// opens a file to write to in append mode, emptying it first
+	file, err := os.OpenFile(pwd+"/audioPattern.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
-	//fmt.Println(newArray)
-	// Print the array
+
+	// Print the array to the file
 	for i := 0; i < len(newArray); i++ {
 		printStructWithCommas(newArray[i], file)
 		if i == limit {
@@ -88,15 +97,14 @@ func main() {
 	}
 }
 
+// fillNextIfFree adds the next Audio struct to the next index if free or inserts it if not
 func fillNextIfFree(m []Audio, native bool, next, i int) []Audio {
 	if next >= sliceSize {
 		return m
 	}
 	if m[next].Id == 0 {
-		m[next] = Audio{
-			Id:     i,
-			Native: native,
-		}
+		m[next].Id = i
+		m[next].Native = native
 		return m
 	}
 	m = slices.Insert(m, next, Audio{
@@ -106,6 +114,7 @@ func fillNextIfFree(m []Audio, native bool, next, i int) []Audio {
 	return m
 }
 
+// findNextFree finds the next free index in the Audio struct slice
 func findNextFree(m []Audio, i int) int {
 	for i < sliceSize && m[i].Id != 0 {
 		i++
@@ -113,6 +122,7 @@ func findNextFree(m []Audio, i int) int {
 	return i
 }
 
+// printStructWithCommas writes the struct to a file in the same way it needs to appear in code
 func printStructWithCommas(s interface{}, file *os.File) {
 	v := reflect.ValueOf(s)
 
@@ -126,6 +136,4 @@ func printStructWithCommas(s interface{}, file *os.File) {
 	if err != nil {
 		panic(err)
 	}
-
-	//fmt.Printf("{%v, %v},", v.Field(0).Interface(), v.Field(1).Interface())
 }
