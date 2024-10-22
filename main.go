@@ -14,24 +14,28 @@ type Audio struct {
 }
 
 const (
-	numberPhrases = 1000
-	sliceSize     = 25 * numberPhrases
-	limit         = 800
+	numberPhrases = 1000               // numberPhrases is set higher than limit to allow for more repetitions
+	sliceSize     = 20 * numberPhrases // you can adjust sliceSize smaller or bigger to change final file size
+	limit         = 800                // set this to where you want to set the limit of phrase
 )
 
 func main() {
 
 	m := make([]Audio, sliceSize)
-	// increasing the multiplier will increase distance between repetitions of a phrase
-	multi := 10
+	// increasing the multiplier will increase the distance between repetitions of a phrase
+	multi := 8
 	for i := 1; i <= numberPhrases; i++ {
 		// find the next free index
 		first := findNextFree(m, i)
 
+		// the firsts time you hear a phrase it will be said once in your native language
+		// then repeated twice in the language you want to learn
 		m = fillNextIfFree(m, true, first, i)
 		m = fillNextIfFree(m, false, first+1, i)
 		m = fillNextIfFree(m, false, first+2, i)
 
+		// add one native phrase and one of the language you want to learn spread out
+		// across the array with increasing space between
 		count := 1
 		j := (first + 2) + multi*count
 		for j < sliceSize {
@@ -53,6 +57,7 @@ func main() {
 
 	//fmt.Println(len(newArray))
 
+	// uncomment to print info describing the array
 	//for i := 0; i < 5; i++ {
 	//	j := 0
 	//	count := 0
